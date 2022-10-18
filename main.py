@@ -13,13 +13,23 @@ import eel
 
 # web_path = get_correct_path("web")
 
+import tkinter as tk
+from tkinter import filedialog
 
+root = tk.Tk()
+root.withdraw()
+
+video_file_path = filedialog.askopenfilename(title = "Select video file")
+sub_file_path = filedialog.askopenfilename(title = "Select subtitles file")
+print(sub_file_path)
 
 eel.init('web')
 
 def launch_mpv():
-    subprocess.Popen(["mpv","C:\\Users\\T4U\Desktop\\netflix subs\\bisque\\[SubsPlease] Sono Bisque Doll wa Koi wo Suru - 08 (1080p) [ED3FCEAB].mkv", 
-    '--input-ipc-server=mpvsocket', r"--geometry=50%+50%+0%", "--volume=50", "--no-audio"])
+    args = ["mpv",video_file_path,'--input-ipc-server=mpvsocket', 
+    r"--geometry=50%+50%+0%", "--volume=50", "--no-audio"]
+    if sub_file_path: args.append("--sub-file={}".format(sub_file_path))
+    subprocess.Popen(args)
 
 def open_pipe():
     f=open(r'\\.\pipe\mpvsocket', "r+", encoding="utf-8")
@@ -35,7 +45,7 @@ def write_keypress(f, key):
 @eel.expose
 def start_video():
     # eel.spawn(cock)
-    x=threading.Thread(target=launch_and_observe)
+    x=threading.Thread(target=launch_and_observe, daemon=True)
     x.start()
     print("Thread started.")
 

@@ -19,6 +19,7 @@
     border-collapse:collapse;
     font-size:22px;
     float: left;
+    width: 100%;
   }
   td {
     padding: 10px 10px;
@@ -31,10 +32,10 @@
     /* Green */
     border: none;
     color: white;
-    padding: 10px 32px;
+    /* padding: 10px 32px; */
     text-align: center;
-    text-decoration: none;
-    display: inline-block;
+    /* text-decoration: none; */
+    /* display: inline-block; */
     font-size:22px;
   }
 
@@ -43,9 +44,27 @@
     color: white;
   }
 </style>
-<body style="background-color:#202020">
+
+<body id="body" style="background-color:#202020">
   <!-- <button onclick="kek()">test</button> -->
-  <div id="main_div"><button onclick="wrapper_start_video()">Start</button></div>
+  <!-- <div>
+    <button onclick="wrapper_start_video()" style="width:20px;height:20px;float:right;font-size:15px;">+</button>
+  </div> -->
+  <div id="main_div">
+    <!-- <table>
+      <tr>
+        <td>
+          <label for="video">Video file:</label>
+          <input type="file" id="video" name="video">
+        </td>
+        <td>
+          <label for="subs">Subs file:</label>
+          <input type="file" id="subs" name="subs">
+        </td>
+      </tr>
+    </table> -->
+    <button onclick="wrapper_start_video()" style="width:100%;height:100%;position:fixed;top:0px;bottom:0px;left:0px;right:0px;">Start</button>
+  </div>
 </body>
 
 </html>

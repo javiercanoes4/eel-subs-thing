@@ -1,8 +1,10 @@
+font_size = 44
 
 document.onkeydown = function(evt) {
     evt = evt || window.event;
     //console.log(evt.key)
-    eel.handle_key(evt.key)
+    if(evt.key == "+" || evt.key == "-") change_font_size(evt.key)
+    else eel.handle_key(evt.key)
 };
 
 eel.expose(set_text);
@@ -22,6 +24,8 @@ async function wrapper_start_video(){
     eel.start_video()
 }
 
-// async function kek(){
-//     eel.handle_key(" ")
-// }
+function change_font_size(op){
+    if(op == "+") font_size+=2
+    else font_size-=2
+    document.getElementById("body").style.fontSize = `${font_size}px`
+}
