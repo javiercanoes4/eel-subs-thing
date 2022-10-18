@@ -27,7 +27,7 @@ eel.init('web')
 
 def launch_mpv():
     args = ["mpv",video_file_path,'--input-ipc-server=mpvsocket', 
-    r"--geometry=50%+50%+0%", "--volume=50", "--no-audio"]
+    r"--geometry=50%+50%+0%", "--volume=50",]
     if sub_file_path: args.append("--sub-file={}".format(sub_file_path))
     subprocess.Popen(args)
 
@@ -99,6 +99,8 @@ def handle_key(key):
         write_keypress(f,"0")
     elif key == "9":
         write_keypress(f,"9")
+    elif key == "j":
+        write_keypress(f,"j")
     close_pipe(f)
 
 
