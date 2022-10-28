@@ -5,6 +5,8 @@
   <title>subs thing</title>
   <script type='text/javascript' src='/eel.js'></script>
   <script type='text/javascript' src="main.js"></script>
+  <!-- <script src="kuroshiro.min.js"></script> -->
+  <!-- <script src="kuroshiro-analyzer-kuromoji.min.js"></script> -->
 </head>
 <style>
 
@@ -43,14 +45,32 @@
     background-color: #252525;
     color: white;
   }
+
+  .ctrl_button {
+    height:50px;
+    width:80px;
+  }
 </style>
 
-<body id="body" style="background-color:#202020">
+<body id="body" style="background-color:#202020; margin:0; padding:0;">
   <!-- <button onclick="kek()">test</button> -->
   <!-- <div>
     <button onclick="wrapper_start_video()" style="width:20px;height:20px;float:right;font-size:15px;">+</button>
   </div> -->
-  <div id="main_div">
+  <div style="width:100%;height:50px;">
+    <button class="ctrl_button" onclick="eel.thread_observe()">Hook</button>
+    <button class="ctrl_button" onclick="switch_furigana()">Furi</button>
+    <button class="ctrl_button" onclick="eel.handle_key('9')">-</button>
+    <button class="ctrl_button" onclick="eel.handle_key('0')">+</button>
+    <button class="ctrl_button" onclick="eel.handle_key('ArrowLeft')">&lt-</button>
+    <button class="ctrl_button" onclick="eel.handle_key(' ')" id="play_button">▶|&nbsp|</button>
+    <button class="ctrl_button" onclick="eel.handle_key('ArrowRight')">-&gt</button>
+    <button class="ctrl_button" onclick="eel.handle_key('j')">Sub</button>
+    <button class="ctrl_button" onclick="eel.open_video()">Open</button>
+    <button class="ctrl_button" onclick="eel.handle_key('q')">Close</button>
+    
+  </div>
+  <div id="main_div" style="padding:40px;">
     <!-- <table>
       <tr>
         <td>
@@ -63,7 +83,7 @@
         </td>
       </tr>
     </table> -->
-    <button onclick="wrapper_start_video()" style="width:100%;height:100%;position:fixed;top:0px;bottom:0px;left:0px;right:0px;">Start</button>
+    <!-- <button onclick="wrapper_start_video()" style="width:100%;height:100%;position:fixed;top:0px;bottom:0px;left:0px;right:0px;">Start</button> -->
   </div>
 </body>
 

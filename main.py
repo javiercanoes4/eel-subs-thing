@@ -3,6 +3,11 @@ import subprocess, json, os, sys, random, threading
 # gevent.monkey.patch_all()
 import eel
 
+import tkinter as tk
+from tkinter import filedialog
+
+from furigana import to_html
+
 # def get_correct_path(relative_path):
 #     try:
 #         base_path = sys._MEIPASS
@@ -13,21 +18,30 @@ import eel
 
 # web_path = get_correct_path("web")
 
-import tkinter as tk
-from tkinter import filedialog
+# import tkinter as tk
+# from tkinter import filedialog
 
-root = tk.Tk()
-root.withdraw()
+# root = tk.Tk()
+# root.withdraw()
 
-video_file_path = filedialog.askopenfilename(title = "Select video file")
-sub_file_path = filedialog.askopenfilename(title = "Select subtitles file")
-print(sub_file_path)
+video_file_path=""
+sub_file_path=""
+current_sub_text=""
+
+# root = tk.Tk()
+# root.withdraw()
+
+# video_file_path = filedialog.askopenfilename(title = "Select video file")
+# sub_file_path = filedialog.askopenfilename(title = "Select subtitles file")
+
+
 
 eel.init('web')
 
 def launch_mpv():
     args = ["mpv",video_file_path,'--input-ipc-server=mpvsocket', 
-    r"--geometry=50%+50%+0%", "--volume=50",]
+    # r"--geometry=50%+50%+0%", 
+    "--volume=50",]
     if sub_file_path: args.append("--sub-file={}".format(sub_file_path))
     subprocess.Popen(args)
 
@@ -45,7 +59,8 @@ def write_keypress(f, key):
 @eel.expose
 def start_video():
     # eel.spawn(cock)
-    x=threading.Thread(target=launch_and_observe, daemon=True)
+    print("kek")
+    x=threading.Thread(target=launch_and_observe,daemon=True)
     x.start()
     print("Thread started.")
 
@@ -53,6 +68,15 @@ def launch_and_observe():
     # current_line = ""
     launch_mpv()
     eel.sleep(1)
+    observe()
+
+@eel.expose
+def thread_observe():
+    x=threading.Thread(target=observe,daemon=True)
+    x.start()
+    print("Thread started.")
+
+def observe():
     f = open_pipe()
     
     # while True:
@@ -77,14 +101,32 @@ def launch_and_observe():
     id = random.randint(0,(2**32))
     f.write(r'{ "command": ["observe_property", '+ str(id)+ ', "sub-text"]}'+'\n')
     f.flush()
+    global current_sub_text
 
     while True:
         res = f.readline()
         print(res)
         res_dict = json.loads(res)
-        if "event" not in res_dict or "id" not in res_dict or res_dict["id"] != id: continue
-        if "data" in res_dict: eel.set_text(res_dict["data"])
+        if "event" in res_dict:
+            if "id" in res_dict and res_dict["id"] == id:
+                if "data" in res_dict: 
+                    current_sub_text=res_dict["data"]
+                    set_text()
+                    # eel.set_text(to_html(res_dict["data"].replace(" ", " ").replace("\n","<br>")))
+            else: eel.parse_event(res_dict["event"])
 
+
+        # if "event" not in res_dict or "id" not in res_dict or res_dict["id"] != id: continue
+        # if "data" in res_dict: eel.set_text(to_html(res_dict["data"].replace(" ", " ").replace("\n","<br>")))
+
+@eel.expose
+def set_text():
+    furigana = eel.check_furigana()()
+    print(furigana)
+    if furigana:
+        eel.set_text(to_html(current_sub_text.replace(" ", " ").replace("\n","<br>")))
+    else:
+        eel.set_text(current_sub_text.replace("\n","<br>"))
 
 @eel.expose
 def handle_key(key):
@@ -101,11 +143,26 @@ def handle_key(key):
         write_keypress(f,"9")
     elif key == "j":
         write_keypress(f,"j")
+    elif key == "q":
+        write_keypress(f,"q")
     close_pipe(f)
 
+@eel.expose
+def open_video():
+    global video_file_path
+    global sub_file_path
+    root = tk.Tk()
+    root.title("How does one hide this earlier??")
+    f1= tk.Frame(root, height=0, width=0)
+    f1.pack()
+    video_file_path = filedialog.askopenfilename(title = "Select video file")
+    root.withdraw()
+    sub_file_path = filedialog.askopenfilename(title = "Select subtitles file")
+    root.destroy()
+    start_video()
 
-eel.start('main.html', size=(1366, 400))
+# keke()
+eel.start('main.html', size=(1366, 800), block=True)
 
 while True:
     eel.sleep(1)
-    print("REEE")

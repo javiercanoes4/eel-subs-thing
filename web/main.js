@@ -1,11 +1,33 @@
+// const kuroshiro = new Kuroshiro();
+// await kuroshiro.init(new KuromojiAnalyzer());
+// import Kuroshiro from "./kuroshiro.min.js"
+
 font_size = 44
+furigana = false
 
 document.onkeydown = function(evt) {
     evt = evt || window.event;
     //console.log(evt.key)
     if(evt.key == "+" || evt.key == "-") change_font_size(evt.key)
+    // else if(evt.key == ' ') play_button()
     else eel.handle_key(evt.key)
 };
+
+// function play_button(){
+//     eel.handle_key(' ')
+//     play_button_switch()
+// }
+
+// function play_button_switch(){
+//     let btn = document.getElementById("play_button")
+//     if(btn.innerHTML == "▶") btn.innerHTML="|&nbsp|"
+//     else btn.innerHTML = "▶"
+// }
+
+function set_symbol_play_button(symbol){
+    let btn = document.getElementById("play_button")
+    btn.innerHTML=symbol
+}
 
 eel.expose(set_text);
 function set_text(text) {
@@ -20,12 +42,29 @@ function set_text(text) {
     div.innerHTML = text
 }
 
-async function wrapper_start_video(){
-    eel.start_video()
+eel.expose(parse_event);
+function parse_event(event){
+    if(event == "pause") set_symbol_play_button("▶")
+    else if (event == "unpause") set_symbol_play_button("|&nbsp|")
 }
+
+
+// async function wrapper_start_video(){
+//     eel.start_video()
+// }
 
 function change_font_size(op){
     if(op == "+") font_size+=2
     else font_size-=2
     document.getElementById("body").style.fontSize = `${font_size}px`
+}
+
+function switch_furigana(){
+    furigana = !furigana
+    eel.set_text()
+}
+
+eel.expose(check_furigana);
+function check_furigana(){
+    return furigana
 }
