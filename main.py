@@ -24,6 +24,11 @@ from furigana import to_html
 # root = tk.Tk()
 # root.withdraw()
 
+windows = os.name == 'nt'
+socket_name = "mpvsocket" if windows else "/tmp/mpvsocket"
+
+if not windows: import socket
+
 video_file_path=""
 sub_file_path=""
 current_sub_text=""
@@ -39,33 +44,41 @@ current_sub_text=""
 eel.init('web')
 
 def launch_mpv():
-    args = ["mpv",video_file_path,'--input-ipc-server=mpvsocket', 
+    args = ["mpv",video_file_path,'--input-ipc-server={}'.format(socket_name), 
     # r"--geometry=50%+50%+0%", 
-    "--volume=50",]
+    "--volume=50",
+    "--no-terminal"]
     if sub_file_path: args.append("--sub-file={}".format(sub_file_path))
     subprocess.Popen(args)
 
 def open_pipe():
-    f=open(r'\\.\pipe\mpvsocket', "r+", encoding="utf-8")
+    if windows:
+        f=open(r'\\.\pipe\mpvsocket', "r+", encoding="utf-8")
+    else:
+        f=socket.socket(family=socket.AF_UNIX)
+        f.connect(socket_name)
     return f
 
 def close_pipe(f):
     f.close()
 
 def write_keypress(f, key):
-    f.write(r'{"command": ["keypress","'+ key +'"]}' + '\n')
-    f.flush()
+    command = str(r'{"command": ["keypress","'+ key +'"]}' + '\n')
+    if windows:
+        f.write(command)
+        f.flush()
+    else:
+        f.send(command.encode("utf-8"))
+    
 
 @eel.expose
 def start_video():
     # eel.spawn(cock)
-    print("kek")
     x=threading.Thread(target=launch_and_observe,daemon=True)
     x.start()
     print("Thread started.")
 
 def launch_and_observe():
-    # current_line = ""
     launch_mpv()
     eel.sleep(1)
     observe()
@@ -99,14 +112,22 @@ def observe():
     #         break
 
     id = random.randint(0,(2**32))
-    f.write(r'{ "command": ["observe_property", '+ str(id)+ ', "sub-text"]}'+'\n')
-    f.flush()
+    command = str(r'{ "command": ["observe_property", '+ str(id)+ ', "sub-text"]}'+'\n')
+    if windows:
+        f.write(command)
+        f.flush()
+    else:
+        f.send(command.encode("utf-8"))
     global current_sub_text
 
     while True:
-        res = f.readline()
+        if windows: res = f.readline()
+        else: res = (f.recv(1024)).decode("utf-8")
         print(res)
-        res_dict = json.loads(res)
+        try:
+            res_dict = json.loads(res)
+        except:
+            continue
         if "event" in res_dict:
             if "id" in res_dict and res_dict["id"] == id:
                 if "data" in res_dict: 
