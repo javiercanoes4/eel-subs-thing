@@ -4,6 +4,8 @@
 
 font_size = 44
 furigana = false
+translation = false
+current_translation_text=""
 
 document.onkeydown = function(evt) {
     evt = evt || window.event;
@@ -42,6 +44,15 @@ function set_text(text) {
     div.innerHTML = text
 }
 
+eel.expose(set_secondary_text);
+function set_secondary_text(text) {
+    current_translation_text = text
+    if(translation){
+        let div = document.getElementById('secondary_div');
+        div.innerHTML = current_translation_text
+    }
+}
+
 eel.expose(parse_event);
 function parse_event(event){
     if(event == "pause") set_symbol_play_button("▶")
@@ -62,6 +73,13 @@ function change_font_size(op){
 function switch_furigana(){
     furigana = !furigana
     eel.set_text()
+}
+
+function switch_translation(){
+    translation=!translation
+    let div = document.getElementById('secondary_div');
+    if(translation) div.innerHTML = current_translation_text
+    else div.innerHTML = ""
 }
 
 eel.expose(check_furigana);

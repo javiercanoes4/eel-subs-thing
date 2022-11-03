@@ -50,6 +50,19 @@
     height:50px;
     width:80px;
   }
+  .secondary_sub{
+    position:fixed;
+    bottom:80px;
+    left:0;
+    right:0;
+    font-size:18px;
+  }
+  .bottom_div {
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+  }
 </style>
 
 <body id="body" style="background-color:#202020; margin:0; padding:0;">
@@ -58,17 +71,16 @@
     <button onclick="wrapper_start_video()" style="width:20px;height:20px;float:right;font-size:15px;">+</button>
   </div> -->
   <div style="width:100%;height:50px;">
-    <button class="ctrl_button" onclick="eel.thread_observe()">Hook</button>
-    <button class="ctrl_button" onclick="switch_furigana()">Furi</button>
-    <button class="ctrl_button" onclick="eel.handle_key('9')">-</button>
-    <button class="ctrl_button" onclick="eel.handle_key('0')">+</button>
+    
+
+    <button class="ctrl_button" onclick="eel.handle_sub_seek(-1)">S(-1)</button>
+    <button class="ctrl_button" onclick="eel.handle_sub_seek(0)">S(0)</button>
+    <button style="margin-right:15px;" class="ctrl_button" onclick="eel.handle_sub_seek(1)">S(+1)</button>
     <button class="ctrl_button" onclick="eel.handle_key('ArrowLeft')">&lt-</button>
     <button class="ctrl_button" onclick="eel.handle_key(' ')" id="play_button">▶|&nbsp|</button>
     <button class="ctrl_button" onclick="eel.handle_key('ArrowRight')">-&gt</button>
-    <button class="ctrl_button" onclick="eel.handle_key('j')">Sub</button>
-    <button class="ctrl_button" onclick="eel.open_video()">Open</button>
-    <button class="ctrl_button" onclick="eel.handle_key('q')">Close</button>
-    
+    <button style="margin-left:15px;" class="ctrl_button" onclick="switch_translation()">TL</button>
+    <button class="ctrl_button" onclick="switch_furigana()">Furi</button>
   </div>
   <div id="main_div" style="padding:40px;">
     <!-- <table>
@@ -84,6 +96,15 @@
       </tr>
     </table> -->
     <!-- <button onclick="wrapper_start_video()" style="width:100%;height:100%;position:fixed;top:0px;bottom:0px;left:0px;right:0px;">Start</button> -->
+  </div>
+  <div id="secondary_div" class="secondary_sub"></div>
+  <div class="bottom_div">
+    <button class="ctrl_button" onclick="eel.handle_key('9')">Vol-</button>
+    <button style="margin-right:15px;" class="ctrl_button" onclick="eel.handle_key('0')">Vol+</button>
+    <button class="ctrl_button" onclick="eel.handle_key('j')">Sub</button>
+    <button style="margin-left:15px;" class="ctrl_button" onclick="eel.thread_observe()">Hook</button>
+    <button class="ctrl_button" onclick="eel.open_video()">Open</button>
+    <button class="ctrl_button" onclick="eel.handle_key('q')">Close</button>
   </div>
 </body>
 
