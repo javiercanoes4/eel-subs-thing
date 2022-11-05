@@ -1,4 +1,4 @@
-import subprocess, json, os, sys, random, threading
+import subprocess, json, os, sys, random, threading, math
 # import gevent.monkey
 # gevent.monkey.patch_all()
 import eel
@@ -35,6 +35,7 @@ current_sub_text=""
 current_secondary_sub_text=""
 playing = False
 observing = False
+current_time=-1
 
 # root = tk.Tk()
 # root.withdraw()
@@ -67,27 +68,29 @@ def open_pipe():
 def close_pipe(f):
     f.close()
 
-def write_keypress(f, key):
-    command = str(r'{"command": ["keypress","'+ key +'"]}' + '\n')
+def pipe_read(f):
+    if windows: res= f.readline()
+    else: res=(f.recv(1024)).decode("utf-8")
+    return res
+
+def pipe_write(f,command):
     if windows:
         f.write(command)
         f.flush()
     else:
         f.send(command.encode("utf-8"))
 
+def write_keypress(f, key):
+    command = str(r'{"command": ["keypress","'+ key +'"]}' + '\n')
+    pipe_write(f,command)
 
 def seek_sub(f,n):
     command = str(r'{"command": ["sub-seek","'+ str(n) +'"]}' + '\n')
-    if windows:
-        f.write(command)
-        f.flush()
-    else:
-        f.send(command.encode("utf-8"))
+    pipe_write(f,command)
     
 
 @eel.expose
 def start_video():
-    # eel.spawn(cock)
     x=threading.Thread(target=launch_and_observe,daemon=True)
     x.start()
     print("Thread started.")
@@ -110,42 +113,26 @@ def observe():
     global observing
     playing=True
     observing=True
-    
-    # while True:
-    #     time.sleep(0.1)
-    #     id = random.randint(0,(2**32))
-    #     f.write(r'{ "command": ["get_property", "sub-text"], "request_id":' + str(id)+ '}'+'\n')
-    #     f.flush()
-    #     while True:
-    #         res = f.readline()
-    #         #print(res)
-    #         res_dict = json.loads(res)
-    #         if "request_id" not in res_dict or res_dict["request_id"] != id: continue
-    #         if "error" in res_dict and res_dict["error"] != "success": break
-    #         #print(res_dict)
-    #         res_line = res_dict["data"]
-    #         if res_line != current_line:
-    #             # print(res_line)
-    #             current_line = res_line
-    #             eel.testing(current_line)
-    #         break
 
-    id_sub_text = random.randint(0,(2**31))
-    id_secondary_sub_text = id_sub_text+1
-    command_list = [str(r'{ "command": ["observe_property", '+ str(id_sub_text)+ ', "sub-text"]}'+'\n'),
-    str(r'{ "command": ["observe_property", '+ str(id_secondary_sub_text)+ ', "secondary-sub-text"]}'+'\n')]
+    id_base = random.randint(0,(2**31))
+    id_sub_text = id_base+0
+    id_secondary_sub_text = id_base+1
+    id_duration = id_base+2
+    id_time_pos = id_base+3
+    command_list = [
+    str(r'{ "command": ["observe_property", '+ str(id_sub_text)+ ', "sub-text"]}'+'\n'),
+    str(r'{ "command": ["observe_property", '+ str(id_secondary_sub_text)+ ', "secondary-sub-text"]}'+'\n'),
+    str(r'{ "command": ["observe_property", '+ str(id_duration)+ ', "duration"]}'+'\n'),
+    str(r'{ "command": ["observe_property", '+ str(id_time_pos)+ ', "time-pos"]}'+'\n')
+    ]
     for command in command_list:
-        if windows:
-            f.write(command)
-            f.flush()
-        else:
-            f.send(command.encode("utf-8"))
+        pipe_write(f,command)
     global current_sub_text
     global current_secondary_sub_text
+    global current_time
 
     while True:
-        if windows: res = f.readline()
-        else: res = (f.recv(1024)).decode("utf-8")
+        res=pipe_read(f)
         print(res)
         try:
             res_dict = json.loads(res)
@@ -156,22 +143,25 @@ def observe():
                 if "data" in res_dict: 
                     current_sub_text=res_dict["data"]
                     set_text()
-                    # eel.set_text(to_html(res_dict["data"].replace(" ", " ").replace("\n","<br>")))
             elif "id" in res_dict and res_dict["id"] == id_secondary_sub_text:
                 if "data" in res_dict:
                     current_secondary_sub_text=res_dict["data"]
                     set_secondary_text()
+            elif "id" in res_dict and res_dict["id"] == id_duration:
+                if "data" in res_dict:
+                    eel.set_duration(math.floor(res_dict["data"]))
+            elif "id" in res_dict and res_dict["id"] == id_time_pos:
+                if "data" in res_dict:
+                    seconds = math.floor(res_dict["data"])
+                    if seconds!=current_time:
+                        current_time = seconds
+                        eel.set_time_pos(current_time)
             elif res_dict["event"] == "end-file": break
             else: eel.parse_event(res_dict["event"])
-
 
     playing = False
     observing = False
     print("video ended")
-
-
-        # if "event" not in res_dict or "id" not in res_dict or res_dict["id"] != id: continue
-        # if "data" in res_dict: eel.set_text(to_html(res_dict["data"].replace(" ", " ").replace("\n","<br>")))
 
 @eel.expose
 def set_text():
@@ -226,7 +216,6 @@ def open_video():
         if video_file_path != "":
             start_video()
 
-# keke()
 eel.start('main.html', size=(1366, 800), block=True)
 
 while True:
