@@ -9,22 +9,24 @@ Installed:
 * mpv
 
 ## GUI controls ##
+Assuming default mpv key configuration:
+
 | Button | Function |
 | --- | --- |
 | S(-1) | Seeks video to the start of the previous subtitle line. |
 | S(0) | Seeks video to the start of the current subtitle line. |
 | S(1) | Seeks video to the start of the next subtitle line. |
-| <- | Seeks video x time back. |
-| ▶⏸ | Pauses/resumes the video playback. |
-| -> | Seeks video x time forward. |
+| <- | Seeks video x time back (left key). |
+| ▶⏸ | Pauses/resumes the video playback (space key). |
+| -> | Seeks video x time forward (right key). |
 | TL | Toggles drawing of secondary subtitle track (id=1). |
 | Furi | Toggles drawing of furigana (may not be accurate). |
-| Vol- | Decreases audio volume. |
-| Vol+ | Increases audio volume. |
-| Sub | Changes subtitle track. |
+| Vol- | Decreases audio volume (9 key). |
+| Vol+ | Increases audio volume (0 key). |
+| Sub | Changes subtitle track (j key). |
 | Hook | Starts IPC communication with mpv if mpv started with --input-ipc-server. The name of the IPC server must be "\\.\pipe\mpvsocket" for Windows or "/tmp/mpvsocket" for Linux.|
 | Open | Asks for video and subtitles files and plays them with mpv. |
-| Close | Closes mpv. |
+| Close | Closes mpv (q key). |
 
 ## Keyboard controls ##
 
