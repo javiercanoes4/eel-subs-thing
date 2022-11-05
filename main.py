@@ -32,6 +32,9 @@ if not windows: import socket
 video_file_path=""
 sub_file_path=""
 current_sub_text=""
+current_secondary_sub_text=""
+playing = False
+observing = False
 
 # root = tk.Tk()
 # root.withdraw()
@@ -47,7 +50,9 @@ def launch_mpv():
     args = ["mpv",video_file_path,'--input-ipc-server={}'.format(socket_name), 
     # r"--geometry=50%+50%+0%", 
     "--volume=50",
-    "--no-terminal"]
+    "--no-terminal",
+    "--secondary-sid=1",
+    "--no-secondary-sub-visibility"]
     if sub_file_path: args.append("--sub-file={}".format(sub_file_path))
     subprocess.Popen(args)
 
@@ -69,6 +74,15 @@ def write_keypress(f, key):
         f.flush()
     else:
         f.send(command.encode("utf-8"))
+
+
+def seek_sub(f,n):
+    command = str(r'{"command": ["sub-seek","'+ str(n) +'"]}' + '\n')
+    if windows:
+        f.write(command)
+        f.flush()
+    else:
+        f.send(command.encode("utf-8"))
     
 
 @eel.expose
@@ -85,12 +99,17 @@ def launch_and_observe():
 
 @eel.expose
 def thread_observe():
-    x=threading.Thread(target=observe,daemon=True)
-    x.start()
-    print("Thread started.")
+    if not observing:
+        x=threading.Thread(target=observe,daemon=True)
+        x.start()
+        print("Thread started.")
 
 def observe():
     f = open_pipe()
+    global playing
+    global observing
+    playing=True
+    observing=True
     
     # while True:
     #     time.sleep(0.1)
@@ -111,14 +130,18 @@ def observe():
     #             eel.testing(current_line)
     #         break
 
-    id = random.randint(0,(2**32))
-    command = str(r'{ "command": ["observe_property", '+ str(id)+ ', "sub-text"]}'+'\n')
-    if windows:
-        f.write(command)
-        f.flush()
-    else:
-        f.send(command.encode("utf-8"))
+    id_sub_text = random.randint(0,(2**31))
+    id_secondary_sub_text = id_sub_text+1
+    command_list = [str(r'{ "command": ["observe_property", '+ str(id_sub_text)+ ', "sub-text"]}'+'\n'),
+    str(r'{ "command": ["observe_property", '+ str(id_secondary_sub_text)+ ', "secondary-sub-text"]}'+'\n')]
+    for command in command_list:
+        if windows:
+            f.write(command)
+            f.flush()
+        else:
+            f.send(command.encode("utf-8"))
     global current_sub_text
+    global current_secondary_sub_text
 
     while True:
         if windows: res = f.readline()
@@ -129,12 +152,22 @@ def observe():
         except:
             continue
         if "event" in res_dict:
-            if "id" in res_dict and res_dict["id"] == id:
+            if "id" in res_dict and res_dict["id"] == id_sub_text:
                 if "data" in res_dict: 
                     current_sub_text=res_dict["data"]
                     set_text()
                     # eel.set_text(to_html(res_dict["data"].replace(" ", " ").replace("\n","<br>")))
+            elif "id" in res_dict and res_dict["id"] == id_secondary_sub_text:
+                if "data" in res_dict:
+                    current_secondary_sub_text=res_dict["data"]
+                    set_secondary_text()
+            elif res_dict["event"] == "end-file": break
             else: eel.parse_event(res_dict["event"])
+
+
+    playing = False
+    observing = False
+    print("video ended")
 
 
         # if "event" not in res_dict or "id" not in res_dict or res_dict["id"] != id: continue
@@ -143,11 +176,14 @@ def observe():
 @eel.expose
 def set_text():
     furigana = eel.check_furigana()()
-    print(furigana)
+    # print(furigana)
     if furigana:
         eel.set_text(to_html(current_sub_text.replace(" ", " ").replace("\n","<br>")))
     else:
         eel.set_text(current_sub_text.replace("\n","<br>"))
+
+def set_secondary_text():
+    eel.set_secondary_text(current_secondary_sub_text.replace("\n","<br>"))
 
 @eel.expose
 def handle_key(key):
@@ -169,18 +205,26 @@ def handle_key(key):
     close_pipe(f)
 
 @eel.expose
+def handle_sub_seek(n):
+    f = open_pipe()
+    seek_sub(f,n)
+    close_pipe(f)
+
+@eel.expose
 def open_video():
-    global video_file_path
-    global sub_file_path
-    root = tk.Tk()
-    root.title("How does one hide this earlier??")
-    f1= tk.Frame(root, height=0, width=0)
-    f1.pack()
-    video_file_path = filedialog.askopenfilename(title = "Select video file")
-    root.withdraw()
-    sub_file_path = filedialog.askopenfilename(title = "Select subtitles file")
-    root.destroy()
-    start_video()
+    if not playing:
+        global video_file_path
+        global sub_file_path
+        root = tk.Tk()
+        root.title("How does one hide this earlier??")
+        f1= tk.Frame(root, height=0, width=0)
+        f1.pack()
+        video_file_path = filedialog.askopenfilename(title = "Select video file")
+        root.withdraw()
+        sub_file_path = filedialog.askopenfilename(title = "Select subtitles file")
+        root.destroy()
+        if video_file_path != "":
+            start_video()
 
 # keke()
 eel.start('main.html', size=(1366, 800), block=True)
