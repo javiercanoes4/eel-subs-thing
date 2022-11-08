@@ -133,7 +133,7 @@ def observe():
 
     while True:
         res=pipe_read(f)
-        print(res)
+        # print(res)
         try:
             res_dict = json.loads(res)
         except:

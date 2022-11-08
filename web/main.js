@@ -9,7 +9,7 @@ document.onkeydown = function(evt) {
     //console.log(evt.key)
     if(evt.key == "+" || evt.key == "-") change_font_size(evt.key)
     else eel.handle_key(evt.key)
-    return false
+    if (evt.key != "F12") return false
 };
 
 function set_symbol_play_button(symbol){
