@@ -3,6 +3,7 @@ Python:
 * eel
 * tkinter
 * pykakasi (for furigana)
+* jaconv
 
 Installed:
 * Chrome
