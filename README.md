@@ -21,6 +21,7 @@ Assuming default mpv key configuration:
 | -> | Seeks video x time forward (right key). |
 | TL | Toggles drawing of secondary subtitle track (id=1). |
 | Furi | Toggles drawing of furigana (may not be accurate). |
+| Wide | Toggles replacing half-width kana with full width kana. If not active, characters will occasionally repeat when furigana is turned on. |
 | Vol- | Decreases audio volume (9 key). |
 | Vol+ | Increases audio volume (0 key). |
 | Sub | Changes subtitle track (j key). |
@@ -47,3 +48,6 @@ Custom keys:
 | --- | --- |
 | + | Increase font size of browser subtitles by 2px. |
 | - | Decrease font size of browser subtitles by 2px. |
+
+## Known issues ##
+* Furigana is broken for words starting with kanji that read with repeated kana. For example: 言いそびれる or 叩く.

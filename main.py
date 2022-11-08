@@ -1,4 +1,4 @@
-import subprocess, json, os, sys, random, threading, math, pykakasi
+import subprocess, json, os, sys, random, threading, math, jaconv
 # import gevent.monkey
 # gevent.monkey.patch_all()
 import eel
@@ -172,12 +172,15 @@ def observe():
 @eel.expose
 def set_text():
     furigana = eel.check_furigana()()
+    tmp_current_sub_text = current_sub_text
+    
+    if eel.check_wide_kana()(): tmp_current_sub_text = jaconv.h2z(tmp_current_sub_text)
     # print(furigana)
     if furigana:
         # eel.set_text(to_html(current_sub_text.replace(" ", " ").replace("\n","<br>")))
-        print("PYTHON SAYS: "+current_sub_text)
+        # print("PYTHON SAYS: "+current_sub_text)
         final_text = ""
-        split_newline = current_sub_text.split("\n")
+        split_newline = tmp_current_sub_text.split("\n")
         for line in split_newline:
             if line == "": continue
             counter=0
@@ -199,7 +202,7 @@ def set_text():
 
 
     else:
-        eel.set_text(current_sub_text.replace("\n","<br>"))
+        eel.set_text(tmp_current_sub_text.replace("\n","<br>"))
 
 def set_secondary_text():
     eel.set_secondary_text(current_secondary_sub_text.replace("\n","<br>"))

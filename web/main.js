@@ -1,6 +1,7 @@
 font_size = 44
 furigana = false
 translation = false
+wide_kana = false
 current_translation_text=""
 duration = 0
 
@@ -87,7 +88,17 @@ function switch_translation(){
     else div.innerHTML = ""
 }
 
+function switch_wide_kana(){
+    wide_kana = !wide_kana
+    eel.set_text()
+}
+
 eel.expose(check_furigana);
 function check_furigana(){
     return furigana
+}
+
+eel.expose(check_wide_kana);
+function check_wide_kana(){
+    return wide_kana
 }
