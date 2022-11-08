@@ -131,33 +131,39 @@ def observe():
     global current_secondary_sub_text
     global current_time
 
+    end_loop = False
     while True:
-        res=pipe_read(f)
-        # print(res)
-        try:
-            res_dict = json.loads(res)
-        except:
-            continue
-        if "event" in res_dict:
-            if "id" in res_dict and res_dict["id"] == id_sub_text:
-                if "data" in res_dict: 
-                    current_sub_text=res_dict["data"]
-                    set_text()
-            elif "id" in res_dict and res_dict["id"] == id_secondary_sub_text:
-                if "data" in res_dict:
-                    current_secondary_sub_text=res_dict["data"]
-                    set_secondary_text()
-            elif "id" in res_dict and res_dict["id"] == id_duration:
-                if "data" in res_dict:
-                    eel.set_duration(math.floor(res_dict["data"]))
-            elif "id" in res_dict and res_dict["id"] == id_time_pos:
-                if "data" in res_dict:
-                    seconds = math.floor(res_dict["data"])
-                    if seconds!=current_time:
-                        current_time = seconds
-                        eel.set_time_pos(current_time)
-            elif res_dict["event"] == "end-file": break
-            else: eel.parse_event(res_dict["event"])
+        if end_loop: break
+        data=pipe_read(f)
+        results = data.split("\n")
+        for res in results[:-1]:
+            print("/LINE/"+res+"/END/")
+            try:
+                res_dict = json.loads(res)
+            except:
+                continue
+            if "event" in res_dict:
+                if "id" in res_dict and res_dict["id"] == id_sub_text:
+                    if "data" in res_dict: 
+                        current_sub_text=res_dict["data"]
+                        set_text()
+                elif "id" in res_dict and res_dict["id"] == id_secondary_sub_text:
+                    if "data" in res_dict:
+                        current_secondary_sub_text=res_dict["data"]
+                        set_secondary_text()
+                elif "id" in res_dict and res_dict["id"] == id_duration:
+                    if "data" in res_dict:
+                        eel.set_duration(math.floor(res_dict["data"]))
+                elif "id" in res_dict and res_dict["id"] == id_time_pos:
+                    if "data" in res_dict:
+                        seconds = math.floor(res_dict["data"])
+                        if seconds!=current_time:
+                            current_time = seconds
+                            eel.set_time_pos(current_time)
+                elif res_dict["event"] == "end-file": 
+                    end_loop = True
+                    break
+                else: eel.parse_event(res_dict["event"])
 
     playing = False
     observing = False
