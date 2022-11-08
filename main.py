@@ -1,4 +1,4 @@
-import subprocess, json, os, sys, random, threading, math
+import subprocess, json, os, sys, random, threading, math, pykakasi
 # import gevent.monkey
 # gevent.monkey.patch_all()
 import eel
@@ -137,7 +137,7 @@ def observe():
         data=pipe_read(f)
         results = data.split("\n")
         for res in results[:-1]:
-            print("/LINE/"+res+"/END/")
+            # print("/LINE/"+res+"/END/")
             try:
                 res_dict = json.loads(res)
             except:
@@ -174,7 +174,30 @@ def set_text():
     furigana = eel.check_furigana()()
     # print(furigana)
     if furigana:
-        eel.set_text(to_html(current_sub_text.replace(" ", " ").replace("\n","<br>")))
+        # eel.set_text(to_html(current_sub_text.replace(" ", " ").replace("\n","<br>")))
+        print("PYTHON SAYS: "+current_sub_text)
+        final_text = ""
+        split_newline = current_sub_text.split("\n")
+        for line in split_newline:
+            if line == "": continue
+            counter=0
+            split_dot = line.split("｡")
+            n_parts = len(split_dot)
+            for part in split_dot:
+                if part == "": continue
+                split_space = part.split(" ")
+                tmp_text = ""
+                for t in split_space:
+                    if t == "": continue
+                    if tmp_text != "": tmp_text+="&nbsp"
+                    tmp_text+=to_html(t)
+                final_text+=tmp_text
+                if counter < n_parts-1 or split_dot[n_parts-1] == "": final_text+="｡&nbsp"
+                counter+=1
+            if len(split_newline) > 1: final_text+="<br>"
+        eel.set_text(final_text)
+
+
     else:
         eel.set_text(current_sub_text.replace("\n","<br>"))
 
